@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>SneakerIQ – Global AI Sneaker Comparator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f5f0e8;--bg2:#fff;--bg3:#ede6d9;--card:#ffffff;
+  --border:#e2d9cc;--border2:#cfc4b4;
+  --text:#1c1408;--text2:#4a3c28;--muted:#8a7560;--dim:#c9bfb0;
+  --orange:#e8560a;--blue:#1d4ed8;--green:#15803d;--purple:#6d28d9;--red:#b91c1c;
+  --shadow:0 2px 8px rgba(0,0,0,.07),0 1px 3px rgba(0,0,0,.05);
+  --shadow-md:0 4px 16px rgba(0,0,0,.1),0 2px 6px rgba(0,0,0,.06);
+  --shadow-lg:0 10px 40px rgba(0,0,0,.13),0 4px 12px rgba(0,0,0,.07);
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;overflow-x:hidden}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:var(--bg3)}::-webkit-scrollbar-thumb{background:var(--dim);border-radius:3px}
+
+/* decorative blobs */
+.blob{position:fixed;border-radius:50%;filter:blur(100px);pointer-events:none;z-index:0}
+.b1{width:700px;height:700px;top:-300px;left:-250px;background:radial-gradient(circle,rgba(232,86,10,.13) 0%,transparent 70%)}
+.b2{width:700px;height:700px;top:-300px;right:-300px;background:radial-gradient(circle,rgba(29,78,216,.1) 0%,transparent 70%)}
+.b3{width:500px;height:500px;bottom:-100px;left:40%;background:radial-gradient(circle,rgba(109,40,217,.07) 0%,transparent 70%)}
+
+#app{position:relative;z-index:1;max-width:1140px;margin:0 auto;padding:52px 20px 100px}
+
+/* ── HEADER ── */
+.header{text-align:center;margin-bottom:60px}
+.badge{display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,rgba(232,86,10,.1),rgba(29,78,216,.07));border:1.5px solid rgba(232,86,10,.25);border-radius:100px;padding:7px 22px;margin-bottom:24px}
+.badge-dot{width:7px;height:7px;border-radius:50%;background:var(--orange);animation:pls 2s ease-in-out infinite}
+@keyframes pls{0%,100%{box-shadow:0 0 0 0 rgba(232,86,10,.5)}50%{box-shadow:0 0 0 6px rgba(232,86,10,0)}}
+.badge span{font-size:11px;font-weight:800;color:var(--orange);text-transform:uppercase;letter-spacing:.12em}
+h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(56px,11vw,100px);line-height:.9;letter-spacing:.02em;margin-bottom:16px}
+h1 em{font-style:normal;background:linear-gradient(120deg,#e8560a,#f59e0b,#1d4ed8);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.subtitle{font-size:17px;color:var(--text2);max-width:560px;margin:0 auto 18px;line-height:1.75;font-weight:500}
+.worldflags{display:flex;justify-content:center;gap:8px;flex-wrap:wrap}
+.worldflags span{font-size:22px}
+
+/* ── SELECTORS ── */
+.sel-grid{display:grid;grid-template-columns:1fr 52px 1fr;gap:20px;align-items:start;margin-bottom:32px}
+.sel-label{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.dot-a{width:10px;height:10px;border-radius:50%;background:var(--orange);box-shadow:0 0 0 3px rgba(232,86,10,.2)}
+.dot-b{width:10px;height:10px;border-radius:50%;background:var(--blue);box-shadow:0 0 0 3px rgba(29,78,216,.2)}
+.la{color:var(--orange)}.lb{color:var(--blue);justify-content:flex-end}
+.vs-col{display:flex;flex-direction:column;align-items:center;padding-top:42px;gap:8px;position:sticky;top:20px}
+.vs-line{width:1.5px;height:28px}
+.vs-la{background:linear-gradient(transparent,var(--border2))}
+.vs-lb{background:linear-gradient(var(--border2),transparent)}
+.vs-badge{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,rgba(232,86,10,.1),rgba(29,78,216,.1));border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;color:var(--text2);box-shadow:var(--shadow)}
+
+/* ── SEARCH ── */
+.srch{position:relative;margin-bottom:10px}
+.srch input{width:100%;background:var(--card);border:2px solid var(--border);border-radius:12px;padding:11px 14px 11px 38px;color:var(--text);font-size:13px;font-family:'DM Sans',sans-serif;outline:none;transition:border-color .2s,box-shadow .2s;box-shadow:var(--shadow)}
+.srch input:focus{border-color:var(--orange);box-shadow:0 0 0 3px rgba(232,86,10,.1)}
+.srch input::placeholder{color:var(--muted)}
+.si{position:absolute;left:13px;top:50%;transform:translateY(-50%);font-size:15px;color:var(--muted)}
+
+/* ── CHIPS ── */
+.chips{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px}
+.chip{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:4px 10px;border-radius:100px;border:1.5px solid var(--border);background:var(--card);color:var(--muted);cursor:pointer;transition:all .18s;box-shadow:var(--shadow)}
+.chip:hover{border-color:var(--border2);color:var(--text2);transform:translateY(-1px)}
+.chip.ca{background:rgba(232,86,10,.1);border-color:rgba(232,86,10,.45);color:var(--orange)}
+.chip.cb{background:rgba(29,78,216,.08);border-color:rgba(29,78,216,.45);color:var(--blue)}
+
+/* ── LIST ── */
+.slist{display:flex;flex-direction:column;gap:6px;max-height:540px;overflow-y:auto;padding-right:2px}
+.slist::-webkit-scrollbar{width:3px}
+.slist::-webkit-scrollbar-thumb{background:var(--dim);border-radius:2px}
+
+.sc{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:14px;cursor:pointer;transition:all .22s cubic-bezier(.34,1.56,.64,1);border:1.5px solid var(--border);background:var(--card);box-shadow:var(--shadow)}
+.sc:hover{border-color:var(--border2);box-shadow:var(--shadow-md);transform:translateY(-1px)}
+.sc.sa{background:rgba(232,86,10,.06);border-color:rgba(232,86,10,.4);box-shadow:0 4px 16px rgba(232,86,10,.14)}
+.sc.sb{background:rgba(29,78,216,.05);border-color:rgba(29,78,216,.4);box-shadow:0 4px 16px rgba(29,78,216,.13)}
+
+/* ── SNEAKER CARD THUMBNAIL ── */
+.thumb{width:64px;height:48px;border-radius:10px;overflow:hidden;flex-shrink:0;position:relative}
+.thumb svg{width:100%;height:100%}
+
+.ci{flex:1;min-width:0}
+.ci-brand{font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.07em}
+.ci-name{font-size:12px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.3}
+.ci-meta{display:flex;gap:5px;margin-top:2px;align-items:center}
+.ci-price{font-size:11px;font-weight:700;color:var(--text2)}
+.ci-pill{font-size:10px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:1px 5px;color:var(--muted);font-weight:600}
+.tick{width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ta{background:var(--orange)}.tb{background:var(--blue)}
+
+/* ── HERO ── */
+.hero-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:28px}
+.hcard{border-radius:24px;padding:24px;position:relative;overflow:hidden;box-shadow:var(--shadow-lg)}
+.ha{background:linear-gradient(145deg,#fff8f3,#fff2e6);border:2px solid rgba(232,86,10,.2)}
+.hb{background:linear-gradient(145deg,#f0f5ff,#e8efff);border:2px solid rgba(29,78,216,.2)}
+.hglow-a{position:absolute;top:-80px;right:-80px;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,rgba(232,86,10,.15),transparent 65%);pointer-events:none}
+.hglow-b{position:absolute;top:-80px;right:-80px;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,rgba(29,78,216,.12),transparent 65%);pointer-events:none}
+.himg{width:100%;height:170px;border-radius:16px;overflow:hidden;margin-bottom:16px;position:relative}
+.himg svg{width:100%;height:100%}
+.hbrand{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.09em;margin-bottom:4px}
+.hname{font-size:18px;font-weight:900;line-height:1.2;margin-bottom:10px}
+.htags{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:14px}
+.tag{font-size:10px;border-radius:100px;padding:3px 10px;font-weight:700;border:1.5px solid transparent}
+.tag-a{background:rgba(232,86,10,.1);color:var(--orange);border-color:rgba(232,86,10,.22)}
+.tag-b{background:rgba(29,78,216,.09);color:var(--blue);border-color:rgba(29,78,216,.22)}
+.hfoot{display:flex;justify-content:space-between;align-items:flex-end}
+.hprice{font-size:28px;font-weight:900}
+.pa{color:var(--orange)}.pb{color:var(--blue)}
+.hmeta{text-align:right}
+.hyear{font-size:12px;color:var(--muted);font-weight:600}
+.hflag{font-size:14px}
+
+/* ── CTA ── */
+.cta{text-align:center;margin-bottom:44px}
+#cbtn{background:linear-gradient(135deg,#e8560a,#f59e0b);color:#fff;border:none;border-radius:16px;padding:18px 64px;font-size:17px;font-family:'DM Sans',sans-serif;font-weight:800;cursor:pointer;box-shadow:0 8px 28px rgba(232,86,10,.35),0 2px 6px rgba(0,0,0,.1);transition:all .28s;position:relative;overflow:hidden;letter-spacing:.02em}
+#cbtn:hover{transform:translateY(-3px);box-shadow:0 14px 40px rgba(232,86,10,.45)}
+#cbtn:disabled{background:var(--bg3);color:var(--muted);box-shadow:var(--shadow);cursor:not-allowed;transform:none;border:2px solid var(--border)}
+.shine{position:absolute;top:0;left:-100%;width:55%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.3),transparent);transform:skewX(-20deg);animation:sh 3s infinite 1.5s}
+@keyframes sh{0%{left:-100%}40%,100%{left:150%}}
+.warn{font-size:13px;color:var(--muted);margin-top:10px;font-weight:600}
+
+/* ── TABS ── */
+.tabs{display:flex;gap:4px;background:var(--bg3);border:2px solid var(--border);border-radius:14px;padding:5px;margin-bottom:24px}
+.tab{flex:1;padding:11px;border-radius:10px;border:none;background:transparent;color:var(--muted);font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s}
+.tab.active{background:var(--card);color:var(--text);box-shadow:var(--shadow)}
+
+/* ── OVERVIEW ── */
+.sg{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:18px}
+.sbox{border-radius:20px;padding:22px;text-align:center;box-shadow:var(--shadow)}
+.sba{background:linear-gradient(145deg,#fff8f3,#fff2e6);border:2px solid rgba(232,86,10,.2)}
+.sbb{background:linear-gradient(145deg,#f0f5ff,#e8efff);border:2px solid rgba(29,78,216,.2)}
+.sbox-label{font-size:11px;color:var(--muted);margin:6px 0 4px;font-weight:700;text-transform:uppercase;letter-spacing:.06em}
+.sbox-name{font-size:13px;font-weight:800;margin-bottom:14px}
+.ms{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.ms-item{background:rgba(255,255,255,.8);border-radius:9px;padding:9px;border:1px solid var(--border)}
+.ms-l{font-size:9px;color:var(--muted);text-transform:uppercase;font-weight:700;letter-spacing:.05em}
+.ms-v{font-size:22px;font-weight:900;line-height:1;margin-top:1px}
+.va{color:var(--orange)}.vb{color:var(--blue)}
+.pcmp{background:var(--card);border:2px solid var(--border);border-radius:18px;padding:22px;display:flex;justify-content:space-between;align-items:center;box-shadow:var(--shadow)}
+.pbig{font-size:38px;font-weight:900;line-height:1}
+.pdiff{font-size:14px;font-weight:800;color:var(--text2);text-align:center}
+.pdiffsub{font-size:11px;color:var(--muted);text-align:center;margin-top:2px}
+
+/* ── PARAMS ── */
+.pbox{background:var(--card);border:2px solid var(--border);border-radius:20px;padding:22px;margin-bottom:14px;box-shadow:var(--shadow)}
+.ph{display:flex;justify-content:space-between;margin-bottom:18px}
+.pt{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.08em}
+.br{margin-bottom:13px}
+.bm{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.bn{font-size:12px;color:var(--text2);font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.bs{display:flex;gap:12px}
+.bv{font-size:14px;font-weight:900}
+.bva{color:var(--orange)}.bvb{color:var(--blue)}.bvd{color:var(--muted)}
+.bt{height:9px;background:var(--bg3);border-radius:5px;overflow:hidden;border:1px solid var(--border)}
+.bars{display:grid;grid-template-columns:1fr 10px 1fr;gap:5px;align-items:center}
+.bfl{transform:scaleX(-1)}
+.bf{height:100%;width:0;border-radius:5px;transition:width 1.1s cubic-bezier(.34,1.56,.64,1)}
+.bfa{background:linear-gradient(90deg,#e8560a,#fb923c)}
+.bfb{background:linear-gradient(90deg,#1d4ed8,#60a5fa)}
+.bc{width:10px;height:10px;border-radius:50%;background:var(--dim);flex-shrink:0;border:1.5px solid var(--card)}
+.wg{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.wb{border-radius:16px;padding:16px;box-shadow:var(--shadow)}
+.wa{background:linear-gradient(145deg,#fff8f3,#fff2e6);border:2px solid rgba(232,86,10,.18)}
+.wbb{background:linear-gradient(145deg,#f0f5ff,#e8efff);border:2px solid rgba(29,78,216,.18)}
+.wl{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.09em;margin-bottom:4px}
+.wn{font-size:44px;font-weight:900;line-height:1}
+.ws{font-size:12px;color:var(--muted);font-weight:600}
+.wcs{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px}
+.wc{font-size:10px;border-radius:5px;padding:3px 7px;font-weight:700}
+.wca{background:rgba(232,86,10,.11);color:var(--orange)}
+.wcb{background:rgba(29,78,216,.1);color:var(--blue)}
+
+/* ── VERDICT ── */
+.aload{text-align:center;padding:64px 20px}
+.asp{font-size:50px;animation:sp 2s linear infinite;display:inline-block;margin-bottom:14px}
+@keyframes sp{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+.alt{font-size:18px;font-weight:800;margin-bottom:6px}
+.als{font-size:14px;color:var(--muted);font-weight:500}
+.wb2{background:linear-gradient(145deg,#fff9f5,#fff4e9);border:2px solid rgba(232,86,10,.28);border-radius:24px;padding:36px;text-align:center;margin-bottom:20px;position:relative;overflow:hidden;box-shadow:var(--shadow-lg)}
+.wstrip{position:absolute;top:0;left:0;right:0;height:5px;background:linear-gradient(90deg,#e8560a,#f59e0b,#1d4ed8)}
+.wtr{font-size:44px;margin-bottom:10px}
+.wsub{font-size:11px;color:var(--orange);font-weight:800;text-transform:uppercase;letter-spacing:.14em;margin-bottom:8px}
+.wname{font-size:28px;font-weight:900;margin-bottom:20px}
+.spair{display:flex;justify-content:center;gap:52px;margin-bottom:22px}
+.sv{font-size:52px;font-weight:900;line-height:1}
+.ssl{font-size:11px;color:var(--muted);margin-top:4px;font-weight:700;text-transform:uppercase;letter-spacing:.06em}
+.sdiv{width:1.5px;background:var(--border2);margin:4px 0}
+.vtext{font-size:15px;color:var(--text2);line-height:1.85;max-width:560px;margin:0 auto;font-style:italic;font-weight:500}
+.pcg{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.pcb{border-radius:18px;padding:20px;box-shadow:var(--shadow)}
+.pca{background:linear-gradient(145deg,#fff8f3,#fff2e6);border:2px solid rgba(232,86,10,.15)}
+.pcc{background:linear-gradient(145deg,#f0f5ff,#e8efff);border:2px solid rgba(29,78,216,.15)}
+.pct{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;margin-bottom:12px}
+.pi,.ni{display:flex;gap:8px;align-items:flex-start;margin-bottom:7px;font-size:13px;color:var(--text2);line-height:1.55;font-weight:500}
+.pro{color:var(--green);flex-shrink:0;font-weight:900}
+.con{color:var(--red);flex-shrink:0;font-weight:900}
+.icrow{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.ic{border-radius:16px;padding:18px;box-shadow:var(--shadow)}
+.icp{background:linear-gradient(145deg,#fdf4ff,#f3e8ff);border:2px solid rgba(109,40,217,.18)}
+.icg{background:linear-gradient(145deg,#f0fdf4,#dcfce7);border:2px solid rgba(21,128,61,.18)}
+.ict{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.09em;margin-bottom:8px}
+.icp .ict{color:var(--purple)}.icg .ict{color:var(--green)}
+.icv{font-size:13px;color:var(--text2);line-height:1.6;font-weight:500}
+
+.panel{animation:fu .32s ease}
+@keyframes fu{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── MODAL ── */
+.mbg{display:none;position:fixed;inset:0;z-index:1000;background:rgba(28,20,8,.4);backdrop-filter:blur(10px);align-items:center;justify-content:center;padding:20px}
+.mbox{background:var(--card);border:2px solid var(--border);border-radius:24px;padding:40px;max-width:480px;width:100%;box-shadow:var(--shadow-lg);position:relative}
+.mclose{position:absolute;top:14px;right:14px;background:var(--bg3);border:1.5px solid var(--border);border-radius:8px;width:32px;height:32px;color:var(--muted);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.mclose:hover{background:var(--border2);color:var(--text)}
+.micon{font-size:40px;margin-bottom:14px}
+.mtitle{font-size:22px;font-weight:900;margin-bottom:8px}
+.msub{font-size:14px;color:var(--muted);line-height:1.65;margin-bottom:22px;font-weight:500}
+.minput{width:100%;background:var(--bg3);border:2px solid var(--border);border-radius:12px;padding:13px 16px;color:var(--text);font-size:14px;font-family:'DM Sans',sans-serif;outline:none;transition:all .2s;margin-bottom:14px;letter-spacing:.04em}
+.minput:focus{border-color:var(--orange);box-shadow:0 0 0 3px rgba(232,86,10,.1)}
+.mbtn{width:100%;background:linear-gradient(135deg,#e8560a,#f59e0b);color:#fff;border:none;border-radius:12px;padding:14px;font-size:15px;font-family:'DM Sans',sans-serif;font-weight:800;cursor:pointer;box-shadow:0 6px 22px rgba(232,86,10,.32);margin-bottom:12px;transition:all .2s}
+.mbtn:hover{transform:translateY(-2px)}
+.mlink{text-align:center;font-size:12px;color:var(--muted)}
+.mlink a{color:var(--orange);text-decoration:none;font-weight:700}
+
+footer{text-align:center;margin-top:64px;padding-top:24px;border-top:2px solid var(--border)}
+footer p{font-size:12px;color:var(--dim);font-weight:600}
+
+@media(max-width:660px){
+  .sel-grid,.hero-grid,.sg,.pcg,.icrow,.wg{grid-template-columns:1fr}
+  .vs-col{flex-direction:row;padding:0;position:static}
+}
+</style>
+</head>
+<body>
+<div class="blob b1"></div>
+<div class="blob b2"></div>
+<div class="blob b3"></div>
+<div id="app">
+
+<div class="header">
+  <div class="badge"><div class="badge-dot"></div><span>AI-Powered · 100+ Global Sneakers</span></div>
+  <h1>FIND YOUR<br/><em>PERFECT KICK</em></h1>
+  <p class="subtitle">Compare iconic sneakers from brands across the world — USA, Japan, India, Europe, Korea, Brazil & beyond. Let AI crown the winner.</p>
+  <div class="worldflags">
+    <span title="USA">🇺🇸</span><span title="Japan">🇯🇵</span><span title="India">🇮🇳</span>
+    <span title="Germany">🇩🇪</span><span title="France">🇫🇷</span><span title="UK">🇬🇧</span>
+    <span title="Switzerland">🇨🇭</span><span title="Italy">🇮🇹</span><span title="China">🇨🇳</span>
+    <span title="South Korea">🇰🇷</span><span title="Sweden">🇸🇪</span><span title="Brazil">🇧🇷</span>
+    <span title="South Africa">🇿🇦</span><span title="Denmark">🇩🇰</span><span title="Finland">🇫🇮</span>
+    <span title="Vietnam">🇻🇳</span><span title="Indonesia">🇮🇩</span><span title="Mexico">🇲🇽</span>
+  </div>
+</div>
+
+<div class="sel-grid">
+  <div>
+    <div class="sel-label la"><div class="dot-a"></div> Challenger A</div>
+    <div class="srch"><span class="si">🔍</span><input id="sa" placeholder="Search name, brand, country…" oninput="rl('a')"/></div>
+    <div class="chips" id="fa"></div>
+    <div class="slist" id="la"></div>
+  </div>
+  <div class="vs-col">
+    <div class="vs-line vs-la"></div>
+    <div class="vs-badge">VS</div>
+    <div class="vs-line vs-lb"></div>
+  </div>
+  <div>
+    <div class="sel-label lb" style="justify-content:flex-end">Challenger B <div class="dot-b"></div></div>
+    <div class="srch"><span class="si">🔍</span><input id="sb" placeholder="Search name, brand, country…" oninput="rl('b')"/></div>
+    <div class="chips" id="fb"></div>
+    <div class="slist" id="lb"></div>
+  </div>
+</div>
+
+<div class="hero-grid" id="hg"></div>
+
+<div class="cta">
+  <button id="cbtn" onclick="runAI()"><span class="shine"></span>⚡ Run AI Comparison</button>
+  <p class="warn" id="sw" style="display:none">Select two different sneakers to compare</p>
+</div>
+
+<div id="res" style="display:none">
+  <div class="tabs">
+    <button class="tab active" onclick="st('overview',this)">📊 Overview</button>
+    <button class="tab" onclick="st('params',this)">📈 Parameters</button>
+    <button class="tab" onclick="st('verdict',this)">🤖 AI Verdict</button>
+  </div>
+  <div id="p-overview" class="panel"></div>
+  <div id="p-params" class="panel" style="display:none"></div>
+  <div id="p-verdict" class="panel" style="display:none"></div>
+</div>
+
+<footer><p>Powered by Claude AI · SneakerIQ 2025 · 100+ global sneakers · Scores are curated expert estimates</p></footer>
+</div>
+
+<!-- MODAL -->
+<div id="km" class="mbg">
+  <div class="mbox">
+    <button class="mclose" onclick="closeM()">✕</button>
+    <div class="micon">🔑</div>
+    <div class="mtitle">Anthropic API Key</div>
+    <div class="msub">Your key stays in this browser session only — sent directly to Anthropic's servers, never stored elsewhere.</div>
+    <input id="ki" class="minput" type="password" placeholder="sk-ant-api03-…" onkeydown="if(event.key==='Enter')saveK()"/>
+    <button class="mbtn" onclick="saveK()">⚡ Unlock AI Comparison</button>
+    <div class="mlink">Free key at <a href="https://console.anthropic.com" target="_blank">console.anthropic.com →</a></div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+// SHOE SVG ARTWORK — rendered inline, always visible
+// Each shoe gets a unique gradient + silhouette
+// ═══════════════════════════════════════════════════════
+function shoeSVG(c1, c2, label, w, h) {
+  // c1/c2 = brand gradient colors, label = short brand text
+  return `<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="bg${label.replace(/\s/g,'')}" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="${c1}" stop-opacity=".18"/>
+        <stop offset="100%" stop-color="${c2}" stop-opacity=".28"/>
+      </linearGradient>
+      <linearGradient id="sh${label.replace(/\s/g,'')}" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="${c1}"/>
+        <stop offset="100%" stop-color="${c2}"/>
+      </linearGradient>
+    </defs>
+    <rect width="${w}" height="${h}" fill="url(#bg${label.replace(/\s/g,'')})"/>
+    <!-- subtle grid -->
+    <line x1="0" y1="${h*.5}" x2="${w}" y2="${h*.5}" stroke="${c1}" stroke-opacity=".1" stroke-width="1"/>
+    <line x1="${w*.5}" y1="0" x2="${w*.5}" y2="${h}" stroke="${c1}" stroke-opacity=".1" stroke-width="1"/>
+    <!-- shoe silhouette path -->
+    <g transform="translate(${w*.08},${h*.18}) scale(${w*.0084},${h*.0084})">
+      <path d="M5 60 C5 60 15 20 45 18 C65 16 80 25 95 28 C108 30 118 26 118 26 L122 34 C122 34 110 40 96 38 C80 36 66 30 48 32 C28 34 18 55 18 65 L5 65 Z" fill="url(#sh${label.replace(/\s/g,'')})" opacity=".85"/>
+      <!-- sole -->
+      <path d="M5 65 L18 65 C18 65 16 72 20 74 L112 74 C116 74 122 68 122 65 L130 65 C130 65 128 80 118 80 L14 80 C8 80 5 74 5 68 Z" fill="${c2}" opacity=".7"/>
+      <!-- laces -->
+      <line x1="55" y1="26" x2="52" y2="36" stroke="white" stroke-width="2" stroke-opacity=".7"/>
+      <line x1="68" y1="25" x2="65" y2="35" stroke="white" stroke-width="2" stroke-opacity=".7"/>
+      <line x1="81" y1="26" x2="78" y2="36" stroke="white" stroke-width="2" stroke-opacity=".7"/>
+      <!-- brand stripe -->
+      <path d="M30 50 L90 42" stroke="url(#sh${label.replace(/\s/g,'')})" stroke-width="3.5" stroke-linecap="round" opacity=".6"/>
+    </g>
+    <!-- brand label -->
+    <text x="${w/2}" y="${h-8}" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="${Math.max(8,w*.1)}px" font-weight="800" fill="${c1}" opacity=".7" text-transform="uppercase">${label}</text>
+  </svg>`;
+}
+
+// brand color map: [primary, secondary]
+const BC = {
+  "Nike":       ["#e8560a","#fb923c"],
+  "Adidas":     ["#000000","#555555"],
+  "New Balance":["#cf0a2c","#e85d04"],
+  "Converse":   ["#cc0000","#1a1a1a"],
+  "Vans":       ["#ee3124","#1a1a1a"],
+  "HOKA":       ["#00a3e0","#0077b6"],
+  "Brooks":     ["#00b2a9","#007acc"],
+  "Saucony":    ["#003087","#0055bb"],
+  "Under Armour":["#e31837","#1a1a1a"],
+  "Timberland": ["#8b6914","#5c4a0d"],
+  "Merrell":    ["#8b4513","#5c2d0a"],
+  "Puma":       ["#e31837","#1a1a1a"],
+  "Salomon":    ["#1d1d1b","#e8560a"],
+  "Veja":       ["#1a1a1a","#555555"],
+  "Balenciaga": ["#1a1a1a","#555555"],
+  "Golden Goose":["#d4af37","#8b6914"],
+  "Reebok":     ["#cc0000","#1a1a1a"],
+  "Alexander McQueen":["#1a1a1a","#555555"],
+  "Common Projects":["#1a1a1a","#8b7460"],
+  "On Running": ["#00b5ad","#0088a3"],
+  "ASICS":      ["#003087","#0055cc"],
+  "Mizuno":     ["#003f87","#0066cc"],
+  "Onitsuka Tiger":["#cc0000","#003087"],
+  "HRX":        ["#e31e24","#ff6b1a"],
+  "Campus":     ["#1b3a6b","#003087"],
+  "Bata":       ["#d4171c","#ff4444"],
+  "Asian":      ["#2e7d32","#43a047"],
+  "Liberty":    ["#1565c0","#1976d2"],
+  "Woodland":   ["#8b4513","#5c2d0a"],
+  "Red Tape":   ["#cc0000","#ff4444"],
+  "Li-Ning":    ["#e31837","#ff4455"],
+  "ANTA":       ["#004b8d","#0066bb"],
+  "361°":       ["#d40000","#ff2222"],
+  "Peak":       ["#0066cc","#0088ee"],
+  "FILA":       ["#003087","#cc0000"],
+  "Diadora":    ["#0033a0","#cc0000"],
+  "Hummel":     ["#e31837","#1a1a1a"],
+  "Karhu":      ["#8b4513","#d4af37"],
+  "Tretorn":    ["#006aa7","#003f87"],
+  "Ecco":       ["#1c3f6e","#003087"],
+  "Eagle":      ["#cc0000","#1a1a1a"],
+  "Olympikus":  ["#009639","#005a20"],
+  "Bathu":      ["#1a1a1a","#555555"],
+  "Flexi":      ["#006847","#004d33"],
+  "Munich":     ["#aa151b","#cc2222"],
+  "Puma India": ["#e31837","#ff4455"],
+  "Walsh":      ["#cc0000","#1a1a1a"],
+  "Nobull":     ["#1a1a1a","#555555"],
+  "Inov-8":     ["#cc0000","#1a1a1a"],
+  "Vivobarefoot":["#1a1a1a","#555555"],
+  "Botas":      ["#d7141a","#003f87"],
+  "Kyaia":      ["#006600","#009900"],
+  "Thượng Đình":["#da251d","#003087"],
+  "Umbro":      ["#d71920","#1a1a1a"],
+  "Björn Borg": ["#004b87","#cc0000"],
+};
+
+function getBrandColors(brand) {
+  return BC[brand] || ["#8a7560","#c4b09a"];
+}
+
+function makeSVGThumb(brand, flag) {
+  const [c1,c2] = getBrandColors(brand);
+  const short = brand.split(' ')[0].substring(0,8).toUpperCase();
+  return shoeSVG(c1, c2, flag+" "+short, 64, 48);
+}
+
+function makeSVGHero(brand, flag, w=320, h=170) {
+  const [c1,c2] = getBrandColors(brand);
+  const lbl = flag+" "+brand.substring(0,10).toUpperCase();
+  return shoeSVG(c1, c2, lbl, w, h);
+}
+
+// ═══════════════════════════════════════════════════════
+// SNEAKER DATABASE — 104 sneakers from 40+ countries
+// ═══════════════════════════════════════════════════════
+const PARAMS = {comfort:"Comfort",durability:"Durability",style:"Style",performance:"Performance",value:"Value",breathability:"Breathability",support:"Support",weight:"Lightweight"};
+const PICONS = {comfort:"☁️",durability:"🛡️",style:"✨",performance:"⚡",value:"💰",breathability:"🌬️",support:"🦶",weight:"🪶"};
+
+const DB = [
+/* ── 🇺🇸 NIKE ────────────────────────────── */
+{id:1,brand:"Nike",country:"USA",flag:"🇺🇸",name:"Air Jordan 1 Retro High OG",colorway:"Chicago Red",price:180,year:1985,tags:["Basketball","Icon","Collab"],desc:"The shoe that started it all. The Chicago colorway is the holy grail of sneaker culture.",p:{comfort:82,durability:88,style:97,performance:79,value:72,breathability:74,support:85,weight:70}},
+{id:2,brand:"Nike",country:"USA",flag:"🇺🇸",name:"Air Jordan 4 Retro",colorway:"Military Blue",price:210,year:1989,tags:["Basketball","Retro","Heritage"],desc:"Winged eyelets, visible Air heel. Tinker Hatfield's most expressive design.",p:{comfort:85,durability:86,style:95,performance:82,value:70,breathability:76,support:87,weight:68}},
+{id:3,brand:"Nike",country:"USA",flag:"🇺🇸",name:"Air Max 90",colorway:"Infrared",price:130,year:1990,tags:["Lifestyle","Classic","Running"],desc:"Visible Air cushioning meets bold 90s colour-blocking. Still the reference.",p:{comfort:88,durability:84,style:92,performance:75,value:80,breathability:82,support:80,weight:72}},
+{id:4,brand:"Nike",country:"USA",flag:"🇺🇸",name:"Air Force 1 Low '07",colorway:"Triple White",price:110,year:1982,tags:["Basketball","Iconic","Street"],desc:"The original basketball shoe turned global streetwear icon.",p:{comfort:80,durability:85,style:96,performance:72,value:83,breathability:72,support:80,weight:66}},
+{id:5,brand:"Nike",country:"USA",flag:"🇺🇸",name:"Dunk Low",colorway:"Panda",price:110,year:1985,tags:["Basketball","Streetwear","Hype"],desc:"Court heritage meets street culture. The collab king of the 2020s.",p:{comfort:77,durability:82,style:96,performance:74,value:84,breathability:76,support:78,weight:80}},
+{id:6,brand:"Nike",country:"USA",flag:"🇺🇸",name:"Pegasus 41",colorway:"White/Blue",price:130,year:2024,tags:["Running","Everyday","Performance"],desc:"40+ years of running excellence. The workhorse trainer reimagined with React cushioning.",p:{comfort:90,durability:88,style:78,performance:89,value:82,breathability:91,support:88,weight:80}},
+{id:7,brand:"Nike",country:"USA",flag:"🇺🇸",name:"Vaporfly 3",colorway:"Volt",price:250,year:2023,tags:["Racing","Carbon","Elite"],desc:"The shoe that rewrote marathon records. ZoomX foam + carbon plate = unfair advantage.",p:{comfort:88,durability:70,style:76,performance:99,value:62,breathability:94,support:85,weight:98}},
+{id:8,brand:"Nike",country:"USA",flag:"🇺🇸",name:"Metcon 9",colorway:"Black/Gold",price:130,year:2023,tags:["Training","CrossFit","Gym"],desc:"Built for the box. Stability plate + flat heel = perfect lifting platform.",p:{comfort:82,durability:94,style:77,performance:92,value:80,breathability:84,support:95,weight:73}},
+{id:9,brand:"Nike",country:"USA",flag:"🇺🇸",name:"Blazer Mid '77",colorway:"Vintage White",price:100,year:1973,tags:["Basketball","Vintage","Lifestyle"],desc:"Stripped back, old-school attitude. The original hoops shoe in retro guise.",p:{comfort:74,durability:80,style:91,performance:68,value:87,breathability:78,support:76,weight:82}},
+{id:10,brand:"Nike",country:"USA",flag:"🇺🇸",name:"React Infinity Run 3",colorway:"White/Black",price:160,year:2022,tags:["Running","Injury Prevention"],desc:"React foam engineered to reduce running injuries. Wide base for stability.",p:{comfort:93,durability:87,style:80,performance:91,value:76,breathability:93,support:90,weight:78}},
+
+/* ── 🇩🇪 ADIDAS ──────────────────────────── */
+{id:11,brand:"Adidas",country:"Germany",flag:"🇩🇪",name:"Ultraboost 23",colorway:"Core Black",price:190,year:2023,tags:["Running","Lifestyle","Boost"],desc:"Maximum Boost energy return meets Primeknit comfort. The everyday luxury trainer.",p:{comfort:96,durability:85,style:88,performance:93,value:78,breathability:91,support:89,weight:83}},
+{id:12,brand:"Adidas",country:"Germany",flag:"🇩🇪",name:"Stan Smith",colorway:"White/Green",price:90,year:1971,tags:["Tennis","Classic","Minimal"],desc:"The world's best-selling shoe. Minimal leather perfection since 1971.",p:{comfort:76,durability:80,style:92,performance:66,value:90,breathability:80,support:72,weight:85}},
+{id:13,brand:"Adidas",country:"Germany",flag:"🇩🇪",name:"Superstar",colorway:"Shell Toe White",price:90,year:1969,tags:["Basketball","Street","Hip-Hop"],desc:"Shell toes rule the streets. The sneaker that bridged basketball and hip-hop.",p:{comfort:74,durability:82,style:93,performance:65,value:88,breathability:74,support:74,weight:80}},
+{id:14,brand:"Adidas",country:"Germany",flag:"🇩🇪",name:"Yeezy 350 V2",colorway:"Zebra",price:220,year:2017,tags:["Lifestyle","Hype","Collab"],desc:"The Kanye collab that redefined sneaker culture. Primeknit + Boost luxury.",p:{comfort:88,durability:78,style:96,performance:72,value:58,breathability:86,support:76,weight:85}},
+{id:15,brand:"Adidas",country:"Germany",flag:"🇩🇪",name:"Samba OG",colorway:"White/Black",price:100,year:1950,tags:["Soccer","Lifestyle","Vintage"],desc:"Born on frozen pitches in 1950. Now the biggest fashion sneaker in the world.",p:{comfort:79,durability:84,style:97,performance:73,value:88,breathability:77,support:75,weight:83}},
+{id:16,brand:"Adidas",country:"Germany",flag:"🇩🇪",name:"Adizero Adios Pro 3",colorway:"White/Solar Red",price:250,year:2023,tags:["Racing","Carbon","Elite"],desc:"World record weapon. EnergyRods 2.0 + Lightstrike Pro foam.",p:{comfort:86,durability:72,style:78,performance:98,value:60,breathability:92,support:84,weight:97}},
+{id:17,brand:"Adidas",country:"Germany",flag:"🇩🇪",name:"Gazelle Indoor",colorway:"Collegiate Navy",price:100,year:1966,tags:["Lifestyle","Suede","Classic"],desc:"The Britpop shoe. Suede softness on a silhouette that never goes out of fashion.",p:{comfort:77,durability:78,style:90,performance:67,value:88,breathability:76,support:70,weight:84}},
+{id:18,brand:"Adidas",country:"Germany",flag:"🇩🇪",name:"NMD R1",colorway:"Triple Black",price:140,year:2015,tags:["Lifestyle","Boost","Street"],desc:"Boost midsole + sock-like Primeknit. The shoe that broke the internet in 2015.",p:{comfort:90,durability:82,style:90,performance:80,value:80,breathability:88,support:78,weight:84}},
+
+/* ── 🇺🇸 NEW BALANCE ─────────────────────── */
+{id:19,brand:"New Balance",country:"USA",flag:"🇺🇸",name:"990v6",colorway:"Grey",price:200,year:2023,tags:["Running","Made in USA","Premium"],desc:"Six generations of American craftsmanship. The benchmark of premium running.",p:{comfort:94,durability:95,style:83,performance:88,value:74,breathability:85,support:96,weight:65}},
+{id:20,brand:"New Balance",country:"USA",flag:"🇺🇸",name:"550",colorway:"White/Green",price:110,year:1989,tags:["Basketball","Retro","Lifestyle"],desc:"The sleeper hit reborn. Clean basketball lines for the fashion crowd.",p:{comfort:80,durability:83,style:92,performance:71,value:85,breathability:79,support:80,weight:78}},
+{id:21,brand:"New Balance",country:"USA",flag:"🇺🇸",name:"2002R",colorway:"Sea Salt",price:150,year:2020,tags:["Running","Lifestyle","Heritage"],desc:"N-ergy tech meets premium nubuck. The luxury trail-runner silhouette.",p:{comfort:92,durability:91,style:87,performance:85,value:76,breathability:82,support:91,weight:70}},
+{id:22,brand:"New Balance",country:"USA",flag:"🇺🇸",name:"FuelCell SuperComp Elite v4",colorway:"White",price:250,year:2024,tags:["Racing","Carbon","Elite"],desc:"Carbon propulsion plate + FuelCell foam. NB's sub-2 hour machine.",p:{comfort:87,durability:73,style:75,performance:97,value:61,breathability:91,support:86,weight:96}},
+
+/* ── 🇺🇸 CONVERSE / VANS ──────────────────── */
+{id:23,brand:"Converse",country:"USA",flag:"🇺🇸",name:"Chuck Taylor All Star",colorway:"Optical White",price:65,year:1917,tags:["Classic","Lifestyle","Canvas"],desc:"Over a century of cool. The simple canvas silhouette that defined generations.",p:{comfort:64,durability:78,style:95,performance:55,value:96,breathability:80,support:52,weight:88}},
+{id:24,brand:"Converse",country:"USA",flag:"🇺🇸",name:"Chuck 70 Hi",colorway:"Black",price:85,year:2013,tags:["Premium","Lifestyle","High-Top"],desc:"The elevated Chuck. Ortholite insole and premium canvas construction.",p:{comfort:72,durability:84,style:93,performance:58,value:88,breathability:82,support:60,weight:86}},
+{id:25,brand:"Vans",country:"USA",flag:"🇺🇸",name:"Old Skool",colorway:"Black/White",price:70,year:1977,tags:["Skate","Classic","Street"],desc:"The first shoe with the Sidestripe. Skate culture's founding document.",p:{comfort:74,durability:82,style:93,performance:70,value:92,breathability:78,support:68,weight:82}},
+{id:26,brand:"Vans",country:"USA",flag:"🇺🇸",name:"Sk8-Hi",colorway:"Black/White",price:75,year:1978,tags:["Skate","High-Top","Classic"],desc:"High-top ankle support meets vulcanized board feel. The skate high forever.",p:{comfort:75,durability:83,style:91,performance:72,value:91,breathability:75,support:82,weight:78}},
+
+/* ── 🇺🇸 RUNNING SPECIALISTS ─────────────── */
+{id:27,brand:"Brooks",country:"USA",flag:"🇺🇸",name:"Ghost 16",colorway:"Black/White",price:140,year:2024,tags:["Running","Neutral","Everyday"],desc:"America's best-selling running shoe. DNA Loft v3 plush-but-responsive cushioning.",p:{comfort:92,durability:91,style:74,performance:87,value:82,breathability:90,support:87,weight:76}},
+{id:28,brand:"Brooks",country:"USA",flag:"🇺🇸",name:"Adrenaline GTS 23",colorway:"Blue/Black",price:140,year:2023,tags:["Running","Stability","Everyday"],desc:"GuideRails keep your knees in check. Brooks' flagship stability shoe.",p:{comfort:90,durability:90,style:73,performance:86,value:81,breathability:88,support:96,weight:73}},
+{id:29,brand:"HOKA",country:"USA",flag:"🇺🇸",name:"Clifton 9",colorway:"White/Nimbus",price:145,year:2023,tags:["Running","Max Cushion","Everyday"],desc:"Pillowy-soft cushioning that never weighs you down. The daily trainer gold standard.",p:{comfort:97,durability:83,style:76,performance:85,value:79,breathability:89,support:86,weight:78}},
+{id:30,brand:"HOKA",country:"USA",flag:"🇺🇸",name:"Bondi 8",colorway:"White/Black",price:165,year:2023,tags:["Running","Max Cushion","Recovery"],desc:"Maximum cushioning. Zero compromise. Ideal for high-mileage weeks and tired legs.",p:{comfort:98,durability:82,style:74,performance:83,value:75,breathability:87,support:88,weight:74}},
+{id:31,brand:"HOKA",country:"USA",flag:"🇺🇸",name:"Speedgoat 5",colorway:"Yellow/Black",price:155,year:2023,tags:["Trail","Ultra","Mountain"],desc:"Ultra-distance trail weapon with Vibram Megagrip. Conquers any terrain.",p:{comfort:88,durability:90,style:75,performance:93,value:74,breathability:84,support:89,weight:76}},
+{id:32,brand:"Saucony",country:"USA",flag:"🇺🇸",name:"Endorphin Speed 4",colorway:"White/Cobalt",price:160,year:2024,tags:["Running","Speed","Training"],desc:"Nylon propulsion plate + PWRRUN PB foam. Speed every single day.",p:{comfort:88,durability:84,style:81,performance:94,value:76,breathability:92,support:84,weight:89}},
+{id:33,brand:"Saucony",country:"USA",flag:"🇺🇸",name:"Jazz Original",colorway:"Navy/Silver",price:80,year:1981,tags:["Retro","Lifestyle","Running"],desc:"The suede-and-nylon heritage runner that defined a generation.",p:{comfort:76,durability:79,style:88,performance:68,value:89,breathability:80,support:74,weight:82}},
+{id:34,brand:"Under Armour",country:"USA",flag:"🇺🇸",name:"Curry 11",colorway:"White/Blue",price:160,year:2024,tags:["Basketball","Signature","Performance"],desc:"Stephen Curry's weapon of choice. Flow traction for quick-cut explosiveness.",p:{comfort:86,durability:87,style:86,performance:90,value:79,breathability:85,support:89,weight:78}},
+{id:35,brand:"Timberland",country:"USA",flag:"🇺🇸",name:"6-Inch Premium Boot",colorway:"Wheat Nubuck",price:198,year:1973,tags:["Boot","Lifestyle","Outdoor"],desc:"The wheat boot that conquered hip-hop and worksites equally.",p:{comfort:79,durability:97,style:90,performance:70,value:78,breathability:60,support:86,weight:48}},
+{id:36,brand:"Merrell",country:"USA",flag:"🇺🇸",name:"Moab Speed 2",colorway:"Black/Tan",price:130,year:2023,tags:["Hiking","Trail","Outdoor"],desc:"Trail-to-town versatility with Vibram outsole grip. Hike literally anything.",p:{comfort:87,durability:96,style:72,performance:88,value:84,breathability:83,support:92,weight:67}},
+{id:37,brand:"Common Projects",country:"USA",flag:"🇺🇸",name:"Achilles Low",colorway:"White",price:440,year:2004,tags:["Luxury","Minimal","Designer"],desc:"The minimalist luxury benchmark. Italian-made perfection in a clean leather shell.",p:{comfort:78,durability:85,style:94,performance:55,value:42,breathability:74,support:68,weight:76}},
+{id:38,brand:"Nobull",country:"USA",flag:"🇺🇸",name:"Trainer+",colorway:"Black",price:139,year:2020,tags:["Training","CrossFit","Minimal"],desc:"SuperFabric® upper. No gimmicks. Pure functional training performance.",p:{comfort:79,durability:96,style:82,performance:89,value:80,breathability:85,support:88,weight:78}},
+
+/* ── 🇩🇪 PUMA ─────────────────────────────── */
+{id:39,brand:"Puma",country:"Germany",flag:"🇩🇪",name:"Suede Classic",colorway:"Black/White",price:75,year:1968,tags:["Lifestyle","Classic","Street"],desc:"The shoe that broke cultural barriers. Basketball, hip-hop, and beyond since 1968.",p:{comfort:75,durability:80,style:91,performance:64,value:90,breathability:74,support:68,weight:82}},
+{id:40,brand:"Puma",country:"Germany",flag:"🇩🇪",name:"RS-X",colorway:"White/Blue",price:110,year:2018,tags:["Lifestyle","Chunky","Dad Shoe"],desc:"Thick soles, loud colours, zero apology. RS-X rewired retro running aesthetics.",p:{comfort:84,durability:80,style:86,performance:72,value:82,breathability:82,support:78,weight:65}},
+{id:41,brand:"Puma",country:"Germany",flag:"🇩🇪",name:"Deviate Nitro 3",colorway:"White/Silver",price:160,year:2024,tags:["Running","Carbon","Elite"],desc:"Nitrogen-infused foam + carbon plate. Puma's most serious race-day shoe.",p:{comfort:87,durability:82,style:80,performance:94,value:74,breathability:91,support:84,weight:90}},
+
+/* ── 🇫🇷 FRANCE ──────────────────────────── */
+{id:42,brand:"Salomon",country:"France",flag:"🇫🇷",name:"XT-6",colorway:"Lunar Rock",price:220,year:2022,tags:["Trail","Technical","Lifestyle"],desc:"Born on the mountain, evolved for the street. The technical sneaker that went viral.",p:{comfort:89,durability:97,style:92,performance:95,value:70,breathability:88,support:93,weight:72}},
+{id:43,brand:"Salomon",country:"France",flag:"🇫🇷",name:"Speedcross 6",colorway:"Black/Red",price:140,year:2023,tags:["Trail","Racing","Outdoor"],desc:"Aggressive lugs devour muddy trails. The go-to race shoe for off-road runners.",p:{comfort:85,durability:95,style:80,performance:96,value:74,breathability:85,support:92,weight:75}},
+{id:44,brand:"Veja",country:"France",flag:"🇫🇷",name:"V-10 Leather",colorway:"Extra White",price:150,year:2004,tags:["Sustainable","Lifestyle","Eco"],desc:"Transparency reimagined as luxury. Amazon rubber soles, no plastic.",p:{comfort:78,durability:81,style:90,performance:65,value:75,breathability:79,support:70,weight:78}},
+{id:45,brand:"Balenciaga",country:"France",flag:"🇫🇷",name:"Triple S",colorway:"White/Multi",price:1095,year:2017,tags:["Luxury","Dad Shoe","Designer"],desc:"The chunky dad shoe that launched a thousand imitators. Fashion as spectacle.",p:{comfort:76,durability:80,style:97,performance:42,value:22,breathability:70,support:72,weight:40}},
+
+/* ── 🇬🇧 UK ───────────────────────────────── */
+{id:46,brand:"Reebok",country:"UK",flag:"🇬🇧",name:"Classic Leather",colorway:"White",price:80,year:1983,tags:["Lifestyle","Classic","Running"],desc:"Premium leather upper, enduring design. The original clean trainer.",p:{comfort:77,durability:83,style:88,performance:66,value:88,breathability:72,support:73,weight:79}},
+{id:47,brand:"Reebok",country:"UK",flag:"🇬🇧",name:"Club C 85",colorway:"White/Green",price:80,year:1985,tags:["Tennis","Classic","Minimal"],desc:"Court minimalism at its cleanest. The white sneaker benchmark.",p:{comfort:75,durability:80,style:89,performance:65,value:90,breathability:76,support:70,weight:83}},
+{id:48,brand:"Reebok",country:"UK",flag:"🇬🇧",name:"Nano X4",colorway:"Black/Gold",price:130,year:2024,tags:["Training","CrossFit","Performance"],desc:"CrossFit Games tested and approved. The gym's hardest-working shoe.",p:{comfort:83,durability:92,style:78,performance:91,value:81,breathability:83,support:94,weight:74}},
+{id:49,brand:"Alexander McQueen",country:"UK",flag:"🇬🇧",name:"Oversized Sneaker",colorway:"White",price:595,year:2018,tags:["Luxury","Designer","Chunky"],desc:"The exaggerated sole that redefined luxury sneakers. Fashion's most-copied silhouette.",p:{comfort:80,durability:84,style:99,performance:52,value:38,breathability:72,support:75,weight:50}},
+{id:50,brand:"Inov-8",country:"UK",flag:"🇬🇧",name:"Trailfly G 270",colorway:"Black/Red",price:145,year:2023,tags:["Trail","Running","Technical"],desc:"Graphene-enhanced grip. The most chemically advanced trail outsole ever made.",p:{comfort:83,durability:93,style:76,performance:92,value:74,breathability:85,support:87,weight:80}},
+{id:51,brand:"Vivobarefoot",country:"UK",flag:"🇬🇧",name:"Primus Lite III",colorway:"White",price:160,year:2021,tags:["Barefoot","Minimal","Sustainable"],desc:"Zero-drop, wide toe box, 3mm sole. Reconnect with the ground beneath you.",p:{comfort:72,durability:80,style:78,performance:80,value:70,breathability:92,support:55,weight:96}},
+{id:52,brand:"Walsh",country:"UK",flag:"🇬🇧",name:"Tornado",colorway:"White/Red",price:100,year:1961,tags:["Trail","Heritage","Running"],desc:"The original British fell-running boot. Mountain-tested since 1961.",p:{comfort:79,durability:92,style:79,performance:88,value:77,breathability:80,support:88,weight:70}},
+{id:53,brand:"Umbro",country:"UK",flag:"🇬🇧",name:"Bumpy Ride",colorway:"White/Black",price:60,year:2015,tags:["Street","Lifestyle","Football"],desc:"Football brand goes lifestyle. Diamond logo on a clean court silhouette.",p:{comfort:73,durability:78,style:83,performance:64,value:88,breathability:76,support:68,weight:80}},
+
+/* ── 🇨🇭 SWITZERLAND ─────────────────────── */
+{id:54,brand:"On Running",country:"Switzerland",flag:"🇨🇭",name:"Cloudmonster",colorway:"White/Flame",price:170,year:2022,tags:["Running","Max Cushion","Tech"],desc:"Monster CloudTec pods for maximum energy return. Swiss engineering meets running glory.",p:{comfort:93,durability:85,style:83,performance:88,value:74,breathability:90,support:85,weight:79}},
+{id:55,brand:"On Running",country:"Switzerland",flag:"🇨🇭",name:"Cloudflow 4",colorway:"Black/Asphalt",price:160,year:2023,tags:["Running","Performance","Daily"],desc:"CloudTec Phase technology. Swiss precision in every stride.",p:{comfort:88,durability:84,style:80,performance:90,value:73,breathability:91,support:84,weight:86}},
+{id:56,brand:"On Running",country:"Switzerland",flag:"🇨🇭",name:"Cloudultra 2",colorway:"Hay/Turmeric",price:200,year:2023,tags:["Trail","Ultra","Mountain"],desc:"100-mile certified. Dual CloudTec plates handle mountain terrain with ease.",p:{comfort:90,durability:93,style:79,performance:93,value:70,breathability:88,support:91,weight:77}},
+
+/* ── 🇮🇹 ITALY ───────────────────────────── */
+{id:57,brand:"Golden Goose",country:"Italy",flag:"🇮🇹",name:"Superstar Distressed",colorway:"White/Silver",price:530,year:2000,tags:["Luxury","Lifestyle","Designer"],desc:"Purposely distressed Italian leather luxury. The worn-in look that costs a fortune.",p:{comfort:78,durability:72,style:96,performance:48,value:32,breathability:74,support:68,weight:76}},
+{id:58,brand:"Diadora",country:"Italy",flag:"🇮🇹",name:"N9000",colorway:"White/Red",price:120,year:2014,tags:["Running","Retro","Lifestyle"],desc:"Italian craftsmanship meets athletic heritage. The suede-mesh heritage runner reborn.",p:{comfort:80,durability:83,style:88,performance:72,value:80,breathability:81,support:78,weight:78}},
+
+/* ── 🇯🇵 JAPAN ───────────────────────────── */
+{id:59,brand:"ASICS",country:"Japan",flag:"🇯🇵",name:"Gel-Kayano 30",colorway:"White/Coral",price:160,year:2023,tags:["Running","Stability","Premium"],desc:"30 years of the gold standard in stability running. GEL-KAYANO is legend.",p:{comfort:93,durability:90,style:77,performance:90,value:77,breathability:88,support:97,weight:70}},
+{id:60,brand:"ASICS",country:"Japan",flag:"🇯🇵",name:"Gel-Nimbus 25",colorway:"Blue/White",price:160,year:2023,tags:["Running","Cushion","Neutral"],desc:"The ultimate cushioned neutral trainer. The long-run companion since 1993.",p:{comfort:96,durability:88,style:75,performance:88,value:76,breathability:89,support:90,weight:68}},
+{id:61,brand:"ASICS",country:"Japan",flag:"🇯🇵",name:"Metaspeed Sky+",colorway:"White/Blue",price:250,year:2023,tags:["Racing","Carbon","Elite"],desc:"ASICS' carbon plate racer built for stride efficiency. Tokyo-engineered.",p:{comfort:85,durability:71,style:79,performance:97,value:60,breathability:93,support:83,weight:97}},
+{id:62,brand:"ASICS",country:"Japan",flag:"🇯🇵",name:"Gel-Lyte III",colorway:"Birch/Birch",price:110,year:1990,tags:["Retro","Lifestyle","Running"],desc:"The split-tongue icon that made ASICS a lifestyle brand.",p:{comfort:82,durability:82,style:89,performance:74,value:82,breathability:83,support:80,weight:78}},
+{id:63,brand:"Mizuno",country:"Japan",flag:"🇯🇵",name:"Wave Rider 27",colorway:"White/Blue",price:130,year:2024,tags:["Running","Neutral","Everyday"],desc:"Wave technology delivers the smoothest ride in running. Precision from Japan.",p:{comfort:90,durability:91,style:76,performance:88,value:82,breathability:89,support:87,weight:76}},
+{id:64,brand:"Mizuno",country:"Japan",flag:"🇯🇵",name:"Wave Prophecy 12",colorway:"Black/Silver",price:280,year:2023,tags:["Running","Premium","Stability"],desc:"Infinite Wave plate delivers unmatched structured stability. Mizuno's pinnacle.",p:{comfort:88,durability:93,style:80,performance:88,value:64,breathability:86,support:96,weight:67}},
+{id:65,brand:"Onitsuka Tiger",country:"Japan",flag:"🇯🇵",name:"Mexico 66",colorway:"White/Red",price:85,year:1966,tags:["Retro","Lifestyle","Classic"],desc:"The 1968 Mexico Olympics shoe that inspired a generation. Stripes of legend.",p:{comfort:74,durability:79,style:92,performance:62,value:88,breathability:78,support:68,weight:82}},
+{id:66,brand:"Onitsuka Tiger",country:"Japan",flag:"🇯🇵",name:"Tai-Chi LE",colorway:"Cream/Red",price:100,year:2003,tags:["Lifestyle","Fashion","Japan"],desc:"Samurai-inspired design with Mexico 66 DNA. Japanese heritage distilled.",p:{comfort:76,durability:80,style:91,performance:64,value:83,breathability:76,support:70,weight:80}},
+
+/* ── 🇮🇳 INDIA ───────────────────────────── */
+{id:67,brand:"HRX",country:"India",flag:"🇮🇳",name:"Street Run",colorway:"Black/Neon Yellow",price:45,year:2020,tags:["Running","India","Value"],desc:"Hrithik Roshan's fitness brand. Great value performance for everyday training.",p:{comfort:74,durability:76,style:78,performance:73,value:96,breathability:78,support:72,weight:80}},
+{id:68,brand:"Campus",country:"India",flag:"🇮🇳",name:"OG-02",colorway:"White/Navy",price:35,year:1983,tags:["Casual","India","Retro"],desc:"India's homegrown sneaker icon. A retro runner beloved across generations.",p:{comfort:72,durability:78,style:82,performance:65,value:97,breathability:76,support:68,weight:82}},
+{id:69,brand:"Bata",country:"India",flag:"🇮🇳",name:"Sparx Runner",colorway:"White/Orange",price:30,year:2010,tags:["Running","India","Budget"],desc:"India's mass-market running staple. Reliable and affordable everywhere.",p:{comfort:68,durability:75,style:70,performance:65,value:98,breathability:72,support:65,weight:80}},
+{id:70,brand:"Asian",country:"India",flag:"🇮🇳",name:"Arrow Running",colorway:"Black/Green",price:25,year:2015,tags:["Running","India","Budget"],desc:"Ultra-affordable Indian performance runner. Maximum access, minimum cost.",p:{comfort:65,durability:72,style:66,performance:62,value:99,breathability:70,support:62,weight:82}},
+{id:71,brand:"Liberty",country:"India",flag:"🇮🇳",name:"Force 10 Pro-1",colorway:"White/Blue",price:28,year:1995,tags:["Classic","India","Heritage"],desc:"The original Indian school shoe turned retro icon. Nostalgia in every step.",p:{comfort:66,durability:77,style:72,performance:60,value:98,breathability:70,support:65,weight:78}},
+{id:72,brand:"Woodland",country:"India",flag:"🇮🇳",name:"OG-1 Outdoor",colorway:"Camel/Brown",price:65,year:1992,tags:["Outdoor","India","Casual"],desc:"India's favourite outdoors brand. Sturdy leather sneaker-boot hybrid.",p:{comfort:74,durability:88,style:72,performance:68,value:90,breathability:64,support:80,weight:60}},
+{id:73,brand:"Red Tape",country:"India",flag:"🇮🇳",name:"Sports Runner",colorway:"White/Black",price:40,year:2005,tags:["Casual","India","Value"],desc:"Indian fashion brand entering performance. Solid everyday value pick.",p:{comfort:70,durability:76,style:74,performance:65,value:95,breathability:73,support:67,weight:79}},
+{id:74,brand:"Puma India",country:"India",flag:"🇮🇳",name:"Virat Kohli Edition",colorway:"White/Gold",price:90,year:2022,tags:["Cricket","Collab","India"],desc:"India's cricket captain collaboration. Court shoe meets subcontinent swagger.",p:{comfort:82,durability:83,style:88,performance:79,value:82,breathability:82,support:83,weight:78}},
+
+/* ── 🇨🇳 CHINA ───────────────────────────── */
+{id:75,brand:"Li-Ning",country:"China",flag:"🇨🇳",name:"Way of Wade 10",colorway:"Black/Gold",price:165,year:2023,tags:["Basketball","China","Signature"],desc:"Dwyane Wade's signature line. NBA-level performance with Chinese innovation.",p:{comfort:85,durability:86,style:88,performance:87,value:78,breathability:84,support:88,weight:76}},
+{id:76,brand:"Li-Ning",country:"China",flag:"🇨🇳",name:"NYFW Essence",colorway:"Red/Gold",price:140,year:2022,tags:["Lifestyle","Fashion","China"],desc:"New York Fashion Week darling. Chinese national pride in sneaker form.",p:{comfort:80,durability:80,style:93,performance:74,value:75,breathability:80,support:78,weight:72}},
+{id:77,brand:"ANTA",country:"China",flag:"🇨🇳",name:"KT9",colorway:"Black/Silver",price:130,year:2023,tags:["Basketball","China","Signature"],desc:"Klay Thompson's fifth ANTA signature. Flash Foam+ for court performance.",p:{comfort:84,durability:86,style:84,performance:86,value:80,breathability:83,support:87,weight:75}},
+{id:78,brand:"361°",country:"China",flag:"🇨🇳",name:"Fierce 4",colorway:"Black/White",price:80,year:2022,tags:["Running","China","Value"],desc:"China's emerging performance brand breaking global markets. QU!KFOAM tech.",p:{comfort:82,durability:83,style:77,performance:83,value:86,breathability:82,support:82,weight:79}},
+{id:79,brand:"Peak",country:"China",flag:"🇨🇳",name:"State II",colorway:"White/Blue",price:100,year:2022,tags:["Running","China","Performance"],desc:"PEAK's flagship running shoe. Advanced Chinese foam technology at a fair price.",p:{comfort:82,durability:83,style:76,performance:82,value:84,breathability:82,support:82,weight:78}},
+
+/* ── 🇰🇷 SOUTH KOREA ─────────────────────── */
+{id:80,brand:"FILA",country:"South Korea",flag:"🇰🇷",name:"Disruptor II",colorway:"White",price:65,year:2018,tags:["Chunky","Lifestyle","Dad Shoe"],desc:"The dad shoe that sparked a global trend. Maximum chunk, zero subtlety.",p:{comfort:78,durability:79,style:87,performance:58,value:88,breathability:72,support:74,weight:52}},
+{id:81,brand:"FILA",country:"South Korea",flag:"🇰🇷",name:"Ray Tracer",colorway:"White/Multi",price:75,year:2019,tags:["Running","Retro","Lifestyle"],desc:"Retro runner aesthetic with Energized EVA. Korea's heritage running silhouette.",p:{comfort:79,durability:78,style:84,performance:70,value:85,breathability:74,support:75,weight:74}},
+
+/* ── 🇧🇷 BRAZIL ───────────────────────────── */
+{id:82,brand:"Olympikus",country:"Brazil",flag:"🇧🇷",name:"Active Runner",colorway:"White/Blue",price:40,year:1975,tags:["Running","Brazil","Value"],desc:"Brazil's most popular sports brand. Built for tropical climates and tight budgets.",p:{comfort:72,durability:76,style:70,performance:70,value:96,breathability:80,support:68,weight:80}},
+
+/* ── 🇿🇦 SOUTH AFRICA ─────────────────────── */
+{id:83,brand:"Bathu",country:"South Africa",flag:"🇿🇦",name:"Honeycomb Classic",colorway:"White",price:70,year:2015,tags:["Lifestyle","Africa","Local"],desc:"The first proudly South African sneaker brand. Iconic honeycomb mesh ventilation.",p:{comfort:76,durability:79,style:85,performance:64,value:88,breathability:84,support:68,weight:82}},
+
+/* ── 🇩🇰 DENMARK ──────────────────────────── */
+{id:84,brand:"Hummel",country:"Denmark",flag:"🇩🇰",name:"Marathona",colorway:"White/Navy",price:75,year:1979,tags:["Running","Retro","Denmark"],desc:"Danish heritage running shoe with Chevrons. Football culture meets the street.",p:{comfort:76,durability:80,style:87,performance:68,value:83,breathability:78,support:73,weight:78}},
+{id:85,brand:"Ecco",country:"Denmark",flag:"🇩🇰",name:"BIOM C4",colorway:"White/Black",price:200,year:2022,tags:["Golf","Running","Premium"],desc:"Danish precision engineering meets BOA lacing. Versatile performance outsole.",p:{comfort:88,durability:92,style:78,performance:84,value:70,breathability:83,support:90,weight:70}},
+
+/* ── 🇸🇪 SWEDEN ───────────────────────────── */
+{id:86,brand:"Tretorn",country:"Sweden",flag:"🇸🇪",name:"Nylite Canvas",colorway:"White",price:80,year:1891,tags:["Tennis","Classic","Sweden"],desc:"Swedish tennis heritage since 1891. The original canvas court sneaker.",p:{comfort:74,durability:78,style:88,performance:62,value:83,breathability:82,support:65,weight:84}},
+{id:87,brand:"Björn Borg",country:"Sweden",flag:"🇸🇪",name:"Ace Low",colorway:"White/Blue",price:90,year:2018,tags:["Tennis","Lifestyle","Nordic"],desc:"Named after the tennis legend. Swedish design with serious court DNA.",p:{comfort:76,durability:80,style:87,performance:68,value:83,breathability:78,support:72,weight:80}},
+
+/* ── 🇫🇮 FINLAND ──────────────────────────── */
+{id:88,brand:"Karhu",country:"Finland",flag:"🇫🇮",name:"Fusion 3.5",colorway:"White/Bronze",price:130,year:1916,tags:["Running","Heritage","Finland"],desc:"Finnish brand older than Nike. Fulcrum tech provides a unique rolling sensation.",p:{comfort:84,durability:87,style:83,performance:83,value:79,breathability:83,support:84,weight:76}},
+
+/* ── 🇮🇩 INDONESIA ────────────────────────── */
+{id:89,brand:"Eagle",country:"Indonesia",flag:"🇮🇩",name:"Eagle Stream",colorway:"Black/Red",price:30,year:2015,tags:["Running","Southeast Asia","Value"],desc:"Southeast Asia's home-grown performance brand. Built for tropical running.",p:{comfort:69,durability:74,style:68,performance:67,value:97,breathability:80,support:65,weight:80}},
+
+/* ── 🇲🇽 MEXICO ───────────────────────────── */
+{id:90,brand:"Flexi",country:"Mexico",flag:"🇲🇽",name:"Pro Run",colorway:"White/Green",price:35,year:2010,tags:["Running","Mexico","Value"],desc:"Mexico's largest footwear company going performance. Local-made comfort.",p:{comfort:70,durability:74,style:68,performance:67,value:97,breathability:74,support:66,weight:80}},
+
+/* ── 🇻🇳 VIETNAM ──────────────────────────── */
+{id:91,brand:"Thượng Đình",country:"Vietnam",flag:"🇻🇳",name:"Classic Canvas 01",colorway:"White/Blue",price:15,year:1957,tags:["Classic","Vietnam","Heritage"],desc:"Vietnam's oldest shoe brand, founded 1957. Canvas worn by generations.",p:{comfort:62,durability:74,style:70,performance:55,value:99,breathability:82,support:55,weight:90}},
+
+/* ── 🇵🇹 PORTUGAL ─────────────────────────── */
+{id:92,brand:"Kyaia",country:"Portugal",flag:"🇵🇹",name:"Felmini Runner",colorway:"White",price:80,year:2018,tags:["Lifestyle","Portugal","Leather"],desc:"Portuguese handcrafted leather sneaker. EU-certified sustainable production.",p:{comfort:77,durability:84,style:87,performance:63,value:78,breathability:75,support:69,weight:76}},
+
+/* ── 🇨🇿 CZECH REPUBLIC ───────────────────── */
+{id:93,brand:"Botas",country:"Czech Republic",flag:"🇨🇿",name:"Classic",colorway:"White",price:50,year:1949,tags:["Heritage","Europe","Classic"],desc:"Eastern Europe's beloved sports shoe since 1949. Worn by Olympians, loved by skaters.",p:{comfort:70,durability:79,style:80,performance:62,value:92,breathability:74,support:65,weight:82}},
+
+/* ── 🇪🇸 SPAIN ────────────────────────────── */
+{id:94,brand:"Munich",country:"Spain",flag:"🇪🇸",name:"Massana",colorway:"White/Caramel",price:95,year:2005,tags:["Lifestyle","Spain","Premium"],desc:"Barcelona-born premium lifestyle sneaker. Refined Mediterranean design language.",p:{comfort:78,durability:82,style:88,performance:66,value:80,breathability:78,support:70,weight:78}},
+
+/* ── BONUS GLOBAL ─────────────────────────── */
+{id:95,brand:"HOKA",country:"USA",flag:"🇺🇸",name:"Mach 6",colorway:"White/Citrus",price:145,year:2024,tags:["Running","Speed","Training"],desc:"PROFLY+ propulsive foam with a firm snap. HOKA's dedicated speed training shoe.",p:{comfort:88,durability:84,style:79,performance:91,value:78,breathability:91,support:82,weight:87}},
+{id:96,brand:"ASICS",country:"Japan",flag:"🇯🇵",name:"GT-2000 12",colorway:"Grey/Lime",price:130,year:2024,tags:["Running","Stability","Everyday"],desc:"Structured support meets everyday versatility. ASICS' most reliable workhorse.",p:{comfort:88,durability:91,style:74,performance:87,value:81,breathability:87,support:94,weight:73}},
+{id:97,brand:"Saucony",country:"USA",flag:"🇺🇸",name:"Kinvara 14",colorway:"White/Orange",price:120,year:2024,tags:["Running","Lightweight","Speed"],desc:"14 generations of fast, light, and fun. The featherweight speedster.",p:{comfort:84,durability:80,style:79,performance:91,value:82,breathability:93,support:78,weight:94}},
+{id:98,brand:"Li-Ning",country:"China",flag:"🇨🇳",name:"Sonic X Ultra",colorway:"Black/Red",price:90,year:2023,tags:["Running","China","Value"],desc:"Li-Ning's everyday runner with full-length foam cushioning. Great China value.",p:{comfort:83,durability:82,style:77,performance:82,value:85,breathability:83,support:81,weight:79}},
+{id:99,brand:"New Balance",country:"USA",flag:"🇺🇸",name:"1080v13",colorway:"White",price:165,year:2024,tags:["Running","Premium","Cushion"],desc:"Fresh Foam X at its best. The pinnacle of NB daily training comfort.",p:{comfort:95,durability:88,style:78,performance:88,value:74,breathability:90,support:90,weight:75}},
+{id:100,brand:"Adidas",country:"Germany",flag:"🇩🇪",name:"Forum Low",colorway:"White/Blue",price:100,year:1984,tags:["Basketball","Retro","Lifestyle"],desc:"The ankle strap icon is back. Classic basketball DNA meets modern street style.",p:{comfort:78,durability:81,style:89,performance:70,value:86,breathability:76,support:82,weight:79}},
+{id:101,brand:"Puma",country:"Germany",flag:"🇩🇪",name:"Clyde All-Pro",colorway:"White/Blue",price:125,year:2020,tags:["Basketball","Performance","Heritage"],desc:"Full-court performance with Puma's basketball heritage. The smooth hoop return.",p:{comfort:83,durability:84,style:83,performance:85,value:80,breathability:82,support:86,weight:76}},
+{id:102,brand:"Onitsuka Tiger",country:"Japan",flag:"🇯🇵",name:"Serrano",colorway:"White/Navy",price:90,year:2009,tags:["Lifestyle","Japan","Retro"],desc:"Low-profile Japanese minimalism meets athletic silhouette. Clean and timeless.",p:{comfort:76,durability:80,style:89,performance:65,value:86,breathability:79,support:70,weight:82}},
+{id:103,brand:"Salomon",country:"France",flag:"🇫🇷",name:"ACS Pro",colorway:"White/Silver",price:200,year:2023,tags:["Trail","Lifestyle","Technical"],desc:"Trail DNA refined into a lifestyle silhouette. The future of outdoor street style.",p:{comfort:88,durability:93,style:89,performance:91,value:68,breathability:87,support:90,weight:74}},
+{id:104,brand:"Veja",country:"France",flag:"🇫🇷",name:"Condor 3",colorway:"White/Grey",price:180,year:2023,tags:["Running","Sustainable","Performance"],desc:"Recycled materials meet running performance. Eco-tech for the conscious runner.",p:{comfort:86,durability:82,style:82,performance:84,value:72,breathability:88,support:83,weight:79}},
+];
+
+// ═══════════════════════════════════════════════════════
+let sel = {a: DB[0], b: DB[10]};
+let af = {a:null, b:null};
+let aiData = null, resShown = false;
+
+window.onload = () => { rf('a'); rf('b'); rl('a'); rl('b'); rh(); };
+
+function rf(side) {
+  const el = document.getElementById('f'+side);
+  const brands = ["Nike","Adidas","ASICS","HOKA","Salomon","New Balance","Vans","On Running"];
+  el.innerHTML = brands.map(b =>
+    `<button class="chip${af[side]===b?' c'+side:''}" onclick="sf('${side}','${b}')">${b}</button>`
+  ).join('')
+  + `<button class="chip${af[side]==='india'?' c'+side:''}" onclick="sf('${side}','india')">🇮🇳 India</button>`
+  + `<button class="chip${af[side]==='japan'?' c'+side:''}" onclick="sf('${side}','japan')">🇯🇵 Japan</button>`
+  + `<button class="chip${af[side]==='luxury'?' c'+side:''}" onclick="sf('${side}','luxury')">💎 Luxury</button>`
+  + `<button class="chip${af[side]==='racing'?' c'+side:''}" onclick="sf('${side}','racing')">🏁 Racing</button>`;
+}
+
+function sf(side, val) {
+  af[side] = af[side]===val ? null : val;
+  rf(side); rl(side);
+}
+
+function rl(side) {
+  const q = document.getElementById('s'+side).value.toLowerCase();
+  const f = af[side];
+  const el = document.getElementById('l'+side);
+  let list = DB.filter(s => {
+    const mq = !q || (s.name+s.brand+s.colorway+s.country+s.tags.join()).toLowerCase().includes(q);
+    let mf = true;
+    if(f==='india') mf = s.country==='India';
+    else if(f==='japan') mf = s.country==='Japan';
+    else if(f==='luxury') mf = s.tags.some(t=>['Luxury','Designer'].includes(t));
+    else if(f==='racing') mf = s.tags.some(t=>['Racing','Carbon','Elite'].includes(t));
+    else if(f) mf = s.brand===f;
+    return mq && mf;
+  });
+  el.innerHTML = list.map(s => {
+    const avg = Math.round(Object.values(s.p).reduce((a,b)=>a+b,0)/8);
+    const isSel = sel[side]?.id === s.id;
+    const [c1,c2] = getBrandColors(s.brand);
+    return `<div class="sc${isSel?' s'+side:''}" onclick="pick('${side}',${s.id})">
+      <div class="thumb">${makeSVGThumb(s.brand, s.flag)}</div>
+      <div class="ci">
+        <div class="ci-brand">${s.flag} ${s.brand}</div>
+        <div class="ci-name">${s.name}</div>
+        <div class="ci-meta">
+          <span class="ci-price">$${s.price}</span>
+          <span class="ci-pill">⭐ ${avg}</span>
+          <span style="font-size:10px;color:var(--muted);font-weight:600">${s.country}</span>
+        </div>
+      </div>
+      ${isSel?`<div class="tick t${side}"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M2 5l2.5 2.5L8 3" stroke="white" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div>`:''}
+    </div>`;
+  }).join('');
+  if(!list.length) el.innerHTML = `<div style="padding:24px;text-align:center;color:var(--muted);font-size:13px;font-weight:600">No sneakers found 👟</div>`;
+}
+
+function pick(side, id) {
+  sel[side] = DB.find(s=>s.id===id);
+  rl('a'); rl('b'); rh(); checkBtn();
+}
+
+function rh() {
+  document.getElementById('hg').innerHTML = [
+    {s:sel.a, side:'a', hcls:'ha', gcls:'hglow-a', pcls:'pa', tcls:'tag-a'},
+    {s:sel.b, side:'b', hcls:'hb', gcls:'hglow-b', pcls:'pb', tcls:'tag-b'}
+  ].map(({s, side, hcls, gcls, pcls, tcls}) => `
+    <div class="hcard ${hcls}">
+      <div class="${gcls}"></div>
+      <div class="himg">${makeSVGHero(s.brand, s.flag, 320, 170)}</div>
+      <div class="hbrand" style="color:${getBrandColors(s.brand)[0]}">${s.flag} ${s.brand} · Challenger ${side.toUpperCase()}</div>
+      <div class="hname">${s.name}</div>
+      <div class="htags">${s.tags.map(t=>`<span class="tag ${tcls}">${t}</span>`).join('')}</div>
+      <div class="hfoot">
+        <span class="hprice ${pcls}">$${s.price}</span>
+        <div class="hmeta"><div class="hyear">Est. ${s.year}</div><div class="hflag">${s.flag} ${s.country}</div></div>
+      </div>
+    </div>`).join('');
+}
+
+function checkBtn() {
+  const same = sel.a.id === sel.b.id;
+  document.getElementById('cbtn').disabled = same;
+  document.getElementById('sw').style.display = same ? 'block' : 'none';
+}
+
+function getKey() { return sessionStorage.getItem('siq_k') || ''; }
+function saveK() {
+  const k = document.getElementById('ki').value.trim();
+  if(!k) { alert('Please enter a valid API key.'); return; }
+  sessionStorage.setItem('siq_k', k);
+  document.getElementById('km').style.display = 'none';
+  runAI();
+}
+function openM() { document.getElementById('km').style.display='flex'; setTimeout(()=>document.getElementById('ki').focus(),100); }
+function closeM() { document.getElementById('km').style.display='none'; }
+
+async function runAI() {
+  if(sel.a.id===sel.b.id) return;
+  if(!getKey()) { openM(); return; }
+  document.getElementById('res').style.display = 'block';
+  resShown = true;
+  st('verdict', document.querySelectorAll('.tab')[2]);
+  aiData = null; rv();
+  document.getElementById('res').scrollIntoView({behavior:'smooth',block:'start'});
+
+  const prompt = `You are a world-class sneaker expert. Compare these two sneakers precisely.
+Sneaker 1: ${sel.a.name} by ${sel.a.brand} (${sel.a.country}), $${sel.a.price}, Est. ${sel.a.year}
+Tags: ${sel.a.tags.join(", ")}. Scores: ${JSON.stringify(sel.a.p)}. ${sel.a.desc}
+Sneaker 2: ${sel.b.name} by ${sel.b.brand} (${sel.b.country}), $${sel.b.price}, Est. ${sel.b.year}
+Tags: ${sel.b.tags.join(", ")}. Scores: ${JSON.stringify(sel.b.p)}. ${sel.b.desc}
+Respond ONLY with valid JSON (no markdown, no backticks):
+{"winner":"exact name","winnerScore":87,"loserScore":73,"verdict":"2-3 punchy sentences referencing specific attributes","sneaker1Pros":["pro1","pro2","pro3"],"sneaker1Cons":["con1","con2"],"sneaker2Pros":["pro1","pro2","pro3"],"sneaker2Cons":["con1","con2"],"bestFor":"1-2 sentences on ideal buyer for winner","valuePickAdvice":"1 sentence on which is better value"}`;
+
+  try {
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": getKey(),
+        "anthropic-version": "2023-06-01",
+        "anthropic-dangerous-direct-browser-access": "true"
+      },
+      body: JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,messages:[{role:"user",content:prompt}]})
+    });
+    const data = await res.json();
+    if(data.error) aiData = {error: "API Error: "+(data.error.message||JSON.stringify(data.error))};
+    else aiData = JSON.parse(data.content.map(i=>i.text||'').join('').replace(/```json|```/g,'').trim());
+  } catch(e) {
+    aiData = {error: "Failed: "+e.message};
+  }
+  rv(); ro(); rp();
+}
+
+function st(name, btn) {
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  ['overview','params','verdict'].forEach(t => {
+    document.getElementById('p-'+t).style.display = t===name?'block':'none';
+  });
+  if(name==='overview') ro();
+  if(name==='params') rp();
+  if(name==='verdict') rv();
+}
+
+function ro() {
+  const s1=sel.a, s2=sel.b;
+  const sc1=Math.round(Object.values(s1.p).reduce((a,b)=>a+b,0)/8);
+  const sc2=Math.round(Object.values(s2.p).reduce((a,b)=>a+b,0)/8);
+  const pd=Math.abs(s1.price-s2.price);
+  const pdl=s1.price<s2.price?`${s1.brand} is $${pd} cheaper`:s2.price<s1.price?`${s2.brand} is $${pd} cheaper`:'Same price';
+  const [c1a,c2a]=getBrandColors(s1.brand), [c1b,c2b]=getBrandColors(s2.brand);
+  document.getElementById('p-overview').innerHTML = `
+    <div class="sg">
+      ${[{s:s1,sc:sc1,cls:'sba',vc:'va',sid:'A',c:c1a},{s:s2,sc:sc2,cls:'sbb',vc:'vb',sid:'B',c:c1b}].map(({s,sc,cls,vc,sid,c})=>`
+        <div class="sbox ${cls}">
+          <svg width="90" height="90" id="ring-${sid}" style="display:block;margin:0 auto"></svg>
+          <div class="sbox-label">Overall Score</div>
+          <div class="sbox-name">${s.flag} ${s.brand} · ${s.name.split(' ').slice(-3).join(' ')}</div>
+          <div class="ms">${Object.entries(s.p).slice(0,4).map(([k,v])=>`<div class="ms-item"><div class="ms-l">${PICONS[k]} ${PARAMS[k]}</div><div class="ms-v ${vc}">${v}</div></div>`).join('')}</div>
+        </div>`).join('')}
+    </div>
+    <div class="pcmp">
+      <div style="text-align:center"><div class="pbig" style="color:${c1a}">$${s1.price}</div><div style="font-size:11px;color:var(--muted);margin-top:4px;font-weight:700">${s1.flag} ${s1.brand}</div></div>
+      <div><div class="pdiff">${pdl}</div><div class="pdiffsub">💳 price gap</div></div>
+      <div style="text-align:center"><div class="pbig" style="color:${c1b}">$${s2.price}</div><div style="font-size:11px;color:var(--muted);margin-top:4px;font-weight:700">${s2.flag} ${s2.brand}</div></div>
+    </div>`;
+  animRing('A', sc1, c1a); animRing('B', sc2, c1b);
+}
+
+function animRing(sid, score, col) {
+  const svg = document.getElementById('ring-'+sid); if(!svg) return;
+  const r=37, cx=45, cy=45, C=2*Math.PI*r;
+  svg.innerHTML = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="rgba(0,0,0,.08)" stroke-width="7"/>
+    <circle id="arc-${sid}" cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${col}" stroke-width="7"
+      stroke-dasharray="${C}" stroke-dashoffset="${C}" stroke-linecap="round"
+      transform="rotate(-90 ${cx} ${cy})" style="transition:stroke-dashoffset 1.3s cubic-bezier(.34,1.56,.64,1)"/>
+    <text x="${cx}" y="${cy+7}" text-anchor="middle" fill="${col}" font-size="19" font-weight="900" font-family="DM Sans,sans-serif" id="num-${sid}">0</text>`;
+  let t0 = null;
+  const step = ts => {
+    if(!t0) t0=ts;
+    const p = Math.min((ts-t0)/1300, 1), e = 1-Math.pow(1-p,3), v = Math.round(score*e);
+    document.getElementById('arc-'+sid)?.setAttribute('stroke-dashoffset', C-(v/100)*C);
+    const n = document.getElementById('num-'+sid); if(n) n.textContent = v;
+    if(p<1) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
+
+function rp() {
+  const s1=sel.a, s2=sel.b;
+  const w1=Object.keys(PARAMS).filter(k=>s1.p[k]>s2.p[k]);
+  const w2=Object.keys(PARAMS).filter(k=>s2.p[k]>s1.p[k]);
+  const [c1a]=getBrandColors(s1.brand), [c1b]=getBrandColors(s2.brand);
+  document.getElementById('p-params').innerHTML = `
+    <div class="pbox">
+      <div class="ph">
+        <span class="pt" style="color:${c1a}">${s1.flag} ${s1.brand}</span>
+        <span class="pt" style="color:var(--muted)">Head-to-Head</span>
+        <span class="pt" style="color:${c1b}">${s2.flag} ${s2.brand}</span>
+      </div>
+      ${Object.keys(PARAMS).map(k=>{
+        const w=s1.p[k]>s2.p[k]?1:s2.p[k]>s1.p[k]?2:0;
+        return `<div class="br">
+          <div class="bm">
+            <span class="bn">${PICONS[k]} ${PARAMS[k]}</span>
+            <div class="bs"><span class="bv ${w===1?'bva':'bvd'}">${s1.p[k]}</span><span class="bv ${w===2?'bvb':'bvd'}">${s2.p[k]}</span></div>
+          </div>
+          <div class="bars">
+            <div class="bt bfl"><div class="bf bfa" data-w="${s1.p[k]}%"></div></div>
+            <div class="bc"></div>
+            <div class="bt"><div class="bf bfb" data-w="${s2.p[k]}%"></div></div>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>
+    <div class="wg">
+      ${[{s:s1,wins:w1,cls:'wa',wc:'wca',c:c1a},{s:s2,wins:w2,cls:'wbb',wc:'wcb',c:c1b}].map(({s,wins,cls,wc,c})=>`
+        <div class="wb ${cls}">
+          <div class="wl" style="color:${c}">${s.flag} ${s.brand} wins</div>
+          <div class="wn" style="color:${c}">${wins.length}<span style="font-size:14px;color:var(--muted);font-weight:700">/8</span></div>
+          <div class="ws">categories</div>
+          <div class="wcs">${wins.map(k=>`<span class="wc ${wc}">${PARAMS[k]}</span>`).join('')}</div>
+        </div>`).join('')}
+    </div>`;
+  setTimeout(() => document.querySelectorAll('.bf').forEach(f=>{f.style.width=f.dataset.w;}), 60);
+}
+
+function rv() {
+  const el = document.getElementById('p-verdict');
+  if(!aiData) {
+    el.innerHTML = `<div class="aload"><div class="asp">⚙️</div><div class="alt">AI is analysing…</div><div class="als">Comparing <strong>${sel.a.name}</strong> vs <strong>${sel.b.name}</strong></div></div>`;
+    return;
+  }
+  if(aiData.error==='__NO_KEY__' || (!aiData.error && !aiData.winner)) {
+    el.innerHTML = `<div class="aload">
+      <div style="font-size:44px;margin-bottom:12px">🔑</div>
+      <div class="alt">API Key Required</div>
+      <div class="als" style="margin-bottom:20px">Enter your Anthropic key to unlock AI comparisons.</div>
+      <button onclick="openM()" style="background:linear-gradient(135deg,#e8560a,#f59e0b);color:#fff;border:none;border-radius:12px;padding:13px 36px;font-size:15px;font-family:'DM Sans',sans-serif;font-weight:800;cursor:pointer;box-shadow:0 6px 22px rgba(232,86,10,.32)">🔑 Enter API Key</button>
+      <div style="margin-top:12px;font-size:12px;color:var(--muted)">Free key at <a href="https://console.anthropic.com" target="_blank" style="color:var(--orange);font-weight:700">console.anthropic.com →</a></div>
+    </div>`;
+    return;
+  }
+  if(aiData.error) {
+    el.innerHTML = `<div class="aload"><div style="font-size:36px;margin-bottom:10px">⚠️</div><div class="alt" style="color:var(--red);margin-bottom:12px">${aiData.error}</div><button onclick="sessionStorage.removeItem('siq_k');openM()" style="background:rgba(232,86,10,.1);color:var(--orange);border:2px solid rgba(232,86,10,.3);border-radius:10px;padding:10px 24px;font-size:13px;font-family:'DM Sans',sans-serif;font-weight:700;cursor:pointer">🔑 Update API Key</button></div>`;
+    return;
+  }
+  const d = aiData;
+  el.innerHTML = `
+    <div class="wb2"><div class="wstrip"></div>
+      <div class="wtr">🏆</div>
+      <div class="wsub">AI Winner</div>
+      <div class="wname">${d.winner}</div>
+      <div class="spair">
+        <div><div class="sv" style="color:var(--orange)">${d.winnerScore}</div><div class="ssl">Winner</div></div>
+        <div class="sdiv"></div>
+        <div><div class="sv" style="color:var(--muted)">${d.loserScore}</div><div class="ssl">Runner-up</div></div>
+      </div>
+      <p class="vtext">"${d.verdict}"</p>
+    </div>
+    <div class="pcg">
+      ${[{s:sel.a,pros:d.sneaker1Pros,cons:d.sneaker1Cons,cls:'pca'},{s:sel.b,pros:d.sneaker2Pros,cons:d.sneaker2Cons,cls:'pcc'}].map(({s,pros,cons,cls})=>{
+        const [c]=getBrandColors(s.brand);
+        return `<div class="pcb ${cls}"><div class="pct" style="color:${c}">${s.flag} ${s.brand} · ${s.name.split(' ').slice(-2).join(' ')}</div>
+          ${(pros||[]).map(p=>`<div class="pi"><span class="pro">✓</span>${p}</div>`).join('')}
+          ${(cons||[]).map(c=>`<div class="ni"><span class="con">✗</span>${c}</div>`).join('')}
+        </div>`;}).join('')}
+    </div>
+    <div class="icrow">
+      <div class="ic icp"><div class="ict">🎯 Best For</div><div class="icv">${d.bestFor}</div></div>
+      <div class="ic icg"><div class="ict">💡 Value Pick</div><div class="icv">${d.valuePickAdvice}</div></div>
+    </div>`;
+}
+</script>
+</body>
+</html>
